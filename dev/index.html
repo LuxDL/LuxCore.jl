@@ -475,6 +475,7 @@
 <li><a href="./#LuxCore.AbstractExplicitContainerLayer"><code>LuxCore.AbstractExplicitContainerLayer</code></a></li>
 <li><a href="./#LuxCore.AbstractExplicitLayer"><code>LuxCore.AbstractExplicitLayer</code></a></li>
 <li><a href="./#LuxCore.apply"><code>LuxCore.apply</code></a></li>
+<li><a href="./#LuxCore.display_name"><code>LuxCore.display_name</code></a></li>
 <li><a href="./#LuxCore.initialparameters"><code>LuxCore.initialparameters</code></a></li>
 <li><a href="./#LuxCore.initialstates"><code>LuxCore.initialstates</code></a></li>
 <li><a href="./#LuxCore.parameterlength"><code>LuxCore.parameterlength</code></a></li>
@@ -503,7 +504,7 @@
 <li><code>statelength(layer::CustomAbstractExplicitLayer)</code> – These can be automatically calculated, but it is recommended that the user defines these.</li>
 </ul>
 <p>See also <a href="./#LuxCore.AbstractExplicitContainerLayer"><code>AbstractExplicitContainerLayer</code></a></p>
-<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/f6f44a080b0ced82d23a129e2822ba0c711c0bcc/src/LuxCore.jl#L13-L34' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/7556cfdeabbb6ac4b3d41215617bb4e65a5cac29/src/LuxCore.jl#L13-L34' class='documenter-source'>source</a><br></p>
 <p><a id='LuxCore.AbstractExplicitContainerLayer' href='#LuxCore.AbstractExplicitContainerLayer'>#</a>
 <strong><code>LuxCore.AbstractExplicitContainerLayer</code></strong> &mdash; <em>Type</em>.</p>
 <div class="highlight"><pre><span></span><code><span class="kt">AbstractExplicitContainerLayer</span><span class="p">{</span><span class="kt">layers</span><span class="p">}</span><span class="w"> </span><span class="o">&lt;:</span><span class="w"> </span><span class="kt">AbstractExplicitLayer</span>
@@ -514,7 +515,7 @@
 <p class="admonition-title">Tip</p>
 <p>Advanced structure manipulation of these layers post construction is possible via <code>Functors.fmap</code>. For a more flexible interface, we recommend using the experimental feature <code>Lux.@layer_map</code>.</p>
 </div>
-<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/f6f44a080b0ced82d23a129e2822ba0c711c0bcc/src/LuxCore.jl#L110-L124' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/7556cfdeabbb6ac4b3d41215617bb4e65a5cac29/src/LuxCore.jl#L119-L133' class='documenter-source'>source</a><br></p>
 <p><a id='General'></a></p>
 <p><a id='General-1'></a></p>
 <h3 id="general">General<a class="headerlink" href="#general" title="Permanent link">¤</a></h3>
@@ -523,7 +524,13 @@
 <div class="highlight"><pre><span></span><code><span class="n">apply</span><span class="p">(</span><span class="n">model</span><span class="o">::</span><span class="kt">AbstractExplicitLayer</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">ps</span><span class="p">,</span><span class="w"> </span><span class="n">st</span><span class="o">::</span><span class="kt">NamedTuple</span><span class="p">)</span>
 </code></pre></div>
 <p>Simply calls <code>model(x, ps, st)</code></p>
-<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/f6f44a080b0ced82d23a129e2822ba0c711c0bcc/src/LuxCore.jl#L94-L98' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/7556cfdeabbb6ac4b3d41215617bb4e65a5cac29/src/LuxCore.jl#L94-L98' class='documenter-source'>source</a><br></p>
+<p><a id='LuxCore.display_name' href='#LuxCore.display_name'>#</a>
+<strong><code>LuxCore.display_name</code></strong> &mdash; <em>Function</em>.</p>
+<div class="highlight"><pre><span></span><code><span class="n">display_name</span><span class="p">(</span><span class="n">layer</span><span class="o">::</span><span class="kt">AbstractExplicitLayer</span><span class="p">)</span>
+</code></pre></div>
+<p>Printed Name of the <code>layer</code>. If the <code>layer</code> has a field <code>name</code> that is used, else the type name is used.</p>
+<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/7556cfdeabbb6ac4b3d41215617bb4e65a5cac29/src/LuxCore.jl#L103-L108' class='documenter-source'>source</a><br></p>
 <p><a id='LuxCore.setup' href='#LuxCore.setup'>#</a>
 <strong><code>LuxCore.setup</code></strong> &mdash; <em>Function</em>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">setup</span><span class="p">(</span><span class="n">rng</span><span class="o">::</span><span class="kt">AbstractRNG</span><span class="p">,</span><span class="w"> </span><span class="n">l</span><span class="o">::</span><span class="kt">AbstractExplicitLayer</span><span class="p">)</span>
@@ -533,7 +540,7 @@
 <p class="admonition-title">Warning</p>
 <p>This function is not pure, it mutates <code>rng</code>.</p>
 </div>
-<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/f6f44a080b0ced82d23a129e2822ba0c711c0bcc/src/LuxCore.jl#L80-L89' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/7556cfdeabbb6ac4b3d41215617bb4e65a5cac29/src/LuxCore.jl#L80-L89' class='documenter-source'>source</a><br></p>
 <p><a id='Parameters'></a></p>
 <p><a id='Parameters-1'></a></p>
 <h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">¤</a></h3>
@@ -542,13 +549,13 @@
 <div class="highlight"><pre><span></span><code><span class="n">initialparameters</span><span class="p">(</span><span class="n">rng</span><span class="o">::</span><span class="kt">AbstractRNG</span><span class="p">,</span><span class="w"> </span><span class="n">l</span><span class="p">)</span>
 </code></pre></div>
 <p>Generate the initial parameters of the layer <code>l</code>.</p>
-<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/f6f44a080b0ced82d23a129e2822ba0c711c0bcc/src/LuxCore.jl#L37-L41' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/7556cfdeabbb6ac4b3d41215617bb4e65a5cac29/src/LuxCore.jl#L37-L41' class='documenter-source'>source</a><br></p>
 <p><a id='LuxCore.parameterlength' href='#LuxCore.parameterlength'>#</a>
 <strong><code>LuxCore.parameterlength</code></strong> &mdash; <em>Function</em>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">parameterlength</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
 </code></pre></div>
 <p>Return the total number of parameters of the layer <code>l</code>.</p>
-<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/f6f44a080b0ced82d23a129e2822ba0c711c0bcc/src/LuxCore.jl#L57-L61' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/7556cfdeabbb6ac4b3d41215617bb4e65a5cac29/src/LuxCore.jl#L57-L61' class='documenter-source'>source</a><br></p>
 <p><a id='States'></a></p>
 <p><a id='States-1'></a></p>
 <h3 id="states">States<a class="headerlink" href="#states" title="Permanent link">¤</a></h3>
@@ -557,31 +564,31 @@
 <div class="highlight"><pre><span></span><code><span class="n">initialstates</span><span class="p">(</span><span class="n">rng</span><span class="o">::</span><span class="kt">AbstractRNG</span><span class="p">,</span><span class="w"> </span><span class="n">l</span><span class="p">)</span>
 </code></pre></div>
 <p>Generate the initial states of the layer <code>l</code>.</p>
-<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/f6f44a080b0ced82d23a129e2822ba0c711c0bcc/src/LuxCore.jl#L48-L52' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/7556cfdeabbb6ac4b3d41215617bb4e65a5cac29/src/LuxCore.jl#L48-L52' class='documenter-source'>source</a><br></p>
 <p><a id='LuxCore.statelength' href='#LuxCore.statelength'>#</a>
 <strong><code>LuxCore.statelength</code></strong> &mdash; <em>Function</em>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">statelength</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
 </code></pre></div>
 <p>Return the total number of states of the layer <code>l</code>.</p>
-<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/f6f44a080b0ced82d23a129e2822ba0c711c0bcc/src/LuxCore.jl#L70-L74' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/7556cfdeabbb6ac4b3d41215617bb4e65a5cac29/src/LuxCore.jl#L70-L74' class='documenter-source'>source</a><br></p>
 <p><a id='LuxCore.testmode' href='#LuxCore.testmode'>#</a>
 <strong><code>LuxCore.testmode</code></strong> &mdash; <em>Function</em>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">testmode</span><span class="p">(</span><span class="n">st</span><span class="o">::</span><span class="kt">NamedTuple</span><span class="p">)</span>
 </code></pre></div>
 <p>Make all occurances of <code>training</code> in state <code>st</code> – <code>Val(false)</code>.</p>
-<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/f6f44a080b0ced82d23a129e2822ba0c711c0bcc/src/LuxCore.jl#L160-L164' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/7556cfdeabbb6ac4b3d41215617bb4e65a5cac29/src/LuxCore.jl#L169-L173' class='documenter-source'>source</a><br></p>
 <p><a id='LuxCore.trainmode' href='#LuxCore.trainmode'>#</a>
 <strong><code>LuxCore.trainmode</code></strong> &mdash; <em>Function</em>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">trainmode</span><span class="p">(</span><span class="n">st</span><span class="o">::</span><span class="kt">NamedTuple</span><span class="p">)</span>
 </code></pre></div>
 <p>Make all occurances of <code>training</code> in state <code>st</code> – <code>Val(true)</code>.</p>
-<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/f6f44a080b0ced82d23a129e2822ba0c711c0bcc/src/LuxCore.jl#L167-L171' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/7556cfdeabbb6ac4b3d41215617bb4e65a5cac29/src/LuxCore.jl#L176-L180' class='documenter-source'>source</a><br></p>
 <p><a id='LuxCore.update_state' href='#LuxCore.update_state'>#</a>
 <strong><code>LuxCore.update_state</code></strong> &mdash; <em>Function</em>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">update_state</span><span class="p">(</span><span class="n">st</span><span class="o">::</span><span class="kt">NamedTuple</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="o">::</span><span class="kt">Symbol</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">;</span><span class="w"> </span><span class="n">layer_check</span><span class="o">=</span><span class="n">_default_layer_check</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
 </code></pre></div>
 <p>Recursively update all occurances of the <code>key</code> in the state <code>st</code> with the <code>value</code>.</p>
-<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/f6f44a080b0ced82d23a129e2822ba0c711c0bcc/src/LuxCore.jl#L174-L178' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/LuxDL/LuxCore.jl/blob/7556cfdeabbb6ac4b3d41215617bb4e65a5cac29/src/LuxCore.jl#L183-L187' class='documenter-source'>source</a><br></p>
 
 
 
