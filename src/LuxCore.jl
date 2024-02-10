@@ -33,7 +33,7 @@ See also [`AbstractExplicitContainerLayer`](@ref)
 abstract type AbstractExplicitLayer end
 
 """
-    initialparameters(rng::AbstractRNG, layer)
+    initialparameters(rng::AbstractRNG, layer) --> NamedTuple
 
 Generate the initial parameters of the layer `l`.
 """
@@ -53,7 +53,7 @@ function initialparameters(rng::AbstractRNG, l)
 end
 
 """
-    initialstates(rng::AbstractRNG, layer)
+    initialstates(rng::AbstractRNG, layer) --> NamedTuple
 
 Generate the initial states of the layer `l`.
 """
@@ -71,7 +71,7 @@ function initialstates(rng::AbstractRNG, l)
 end
 
 """
-    parameterlength(layer)
+    parameterlength(layer) --> Int
 
 Return the total number of parameters of the layer `l`.
 """
@@ -84,7 +84,7 @@ end
 parameterlength(a::AbstractArray) = length(a)
 
 """
-    statelength(layer)
+    statelength(layer) --> Int
 
 Return the total number of states of the layer `l`.
 """
@@ -94,7 +94,7 @@ statelength(a::AbstractArray) = length(a)
 statelength(::Any) = 1
 
 """
-    setup(rng::AbstractRNG, layer)
+    setup(rng::AbstractRNG, layer) --> (ps, st)
 
 Shorthand for getting the parameters and states of the layer `l`. Is equivalent to
 `(initialparameters(rng, l), initialstates(rng, l))`.
@@ -108,14 +108,14 @@ This function is not pure, it mutates `rng`.
 setup(rng::AbstractRNG, l) = (initialparameters(rng, l), initialstates(rng, l))
 
 """
-    apply(model, x, ps, st)
+    apply(model, x, ps, st) --> (y, st′)
 
 Simply calls `model(x, ps, st)`
 """
 apply(model::AbstractExplicitLayer, x, ps, st) = model(x, ps, st)
 
 """
-    display_name(layer::AbstractExplicitLayer)
+    display_name(layer::AbstractExplicitLayer) --> String
 
 Printed Name of the `layer`. If the `layer` has a field `name` that is used, else the type
 name is used.
@@ -182,14 +182,14 @@ end
 
 # Test Mode
 """
-    testmode(st::NamedTuple)
+    testmode(st::NamedTuple) --> st′
 
 Make all occurances of `training` in state `st` -- `Val(false)`.
 """
 testmode(st::NamedTuple) = update_state(st, :training, Val(false))
 
 """
-    trainmode(st::NamedTuple)
+    trainmode(st::NamedTuple) --> st′
 
 Make all occurances of `training` in state `st` -- `Val(true)`.
 """
@@ -197,7 +197,7 @@ trainmode(st::NamedTuple) = update_state(st, :training, Val(true))
 
 """
     update_state(st::NamedTuple, key::Symbol, value;
-        layer_check=_default_layer_check(key))
+        layer_check=_default_layer_check(key)) --> st′
 
 Recursively update all occurances of the `key` in the state `st` with the `value`.
 """
@@ -215,7 +215,7 @@ function _default_layer_check(key)
 end
 
 """
-    contains_lux_layer(l) -> Bool
+    contains_lux_layer(l) --> Bool
 
 Check if the structure `l` is a Lux AbstractExplicitLayer or a container of such a layer.
 """
@@ -225,10 +225,9 @@ function contains_lux_layer(l)
 end
 
 """
-    check_fmap_condition(cond, tmatch, x) -> Bool
+    check_fmap_condition(cond, tmatch, x) --> Bool
 
-`fmap`s into the structure `x` and see if `cond` is statisfied for any of the leaf
-elements.
+`fmap`s into the structure `x` and see if `cond` is statisfied for any of the leaf elements.
 
 ## Arguments
 
@@ -251,5 +250,15 @@ function check_fmap_condition(cond, tmatch, x)
     fmap(__check, x)
     return matched[]
 end
+
+# Interface Specification for Inplace Layers
+"""
+    apply!(y, buffer, model, x, ps, st) --> (y, st′)
+
+Calls `model(y, buffer, x, ps, st)`. `y` is the output buffer that is mutated in place.
+`buffer` is a buffer that can be used for temporary storage. Current intended use for
+`buffer` is to provide a buffer from `Bumper.jl`.
+"""
+apply!(y, buffer, model::AbstractExplicitLayer, x, ps, st) = model(y, buffer, x, ps, st)
 
 end
