@@ -177,7 +177,9 @@ this include:
     repack it before returning. See the Lux manual on Custom Input Types for a motivating
     example.
 """
-@stable apply(model::AbstractExplicitLayer, x, ps, st) = model(x, ps, st)
+@stable default_mode="warn" function apply(model::AbstractExplicitLayer, x, ps, st)
+    return model(x, ps, st)
+end
 
 """
     stateless_apply(model, x, ps)
@@ -186,7 +188,7 @@ Calls `apply` and only returns the first argument. This function requires that `
 an empty state of `NamedTuple()`. Behavior of other kinds of models are undefined and it is
 the responsibility of the user to ensure that the model has an empty state.
 """
-@stable function stateless_apply(model::AbstractExplicitLayer, x, ps)
+@stable default_mode="warn" function stateless_apply(model::AbstractExplicitLayer, x, ps)
     return first(apply(model, x, ps, _getemptystate(model)))
 end
 

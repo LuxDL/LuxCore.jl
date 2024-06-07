@@ -27,8 +27,5 @@ Optimisers = "3bd65402-5787-11e9-1adc-39752487f4e2"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
-[preferences.LuxCore]
-instability_check = "warn"
-
 [targets]
 test = ["Aqua", "ExplicitImports", "Optimisers", "Random", "Test"]
