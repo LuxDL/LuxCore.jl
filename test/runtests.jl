@@ -8,7 +8,7 @@ struct Dense <: LuxCore.AbstractExplicitLayer
     out::Int
 end
 
-function LuxCore.initialparameters(rng::AbstractRNG, l::Dense)
+function LuxCore.initial_parameters(rng::AbstractRNG, l::Dense)
     return (w=randn(rng, l.out, l.in), b=randn(rng, l.out))
 end
 
@@ -36,14 +36,14 @@ function (c::Chain2)(x, ps, st)
 end
 
 @testset "LuxCore.jl Tests" begin
-    @testset "AbstractExplicitLayer Interface" begin
+    @testset "AbstractLuxLayer Interface" begin
         @testset "Custom Layer" begin
             model = Dense(5, 6)
             x = randn(rng, Float32, 5)
             ps, st = LuxCore.setup(rng, model)
 
-            @test LuxCore.parameterlength(ps) == LuxCore.parameterlength(model)
-            @test LuxCore.statelength(st) == LuxCore.statelength(model)
+            @test LuxCore.parameter_length(ps) == LuxCore.parameter_length(model)
+            @test LuxCore.state_length(st) == LuxCore.state_length(model)
 
             @test LuxCore.apply(model, x, ps, st) == model(x, ps, st)
 
@@ -51,49 +51,49 @@ end
                   first(LuxCore.apply(model, x, ps, NamedTuple()))
 
             # the layer just passes x along
-            @test LuxCore.outputsize(model, x, rng) == (5,)
+            @test LuxCore.output_size(model, x, rng) == (5,)
             @test_nowarn println(model)
         end
 
         @testset "Default Fallbacks" begin
-            struct NoParamStateLayer <: LuxCore.AbstractExplicitLayer end
+            struct NoParamStateLayer <: LuxCore.AbstractLuxLayer end
 
             layer = NoParamStateLayer()
-            @test LuxCore.initialparameters(rng, layer) == NamedTuple()
-            @test LuxCore.initialstates(rng, layer) == NamedTuple()
+            @test LuxCore.initial_parameters(rng, layer) == NamedTuple()
+            @test LuxCore.initial_states(rng, layer) == NamedTuple()
 
-            @test LuxCore.parameterlength(zeros(10, 2)) == 20
-            @test LuxCore.statelength(zeros(10, 2)) == 20
-            @test LuxCore.statelength(Val(true)) == 1
-            @test LuxCore.statelength((zeros(10), zeros(5, 2))) == 20
-            @test LuxCore.statelength((layer_1=zeros(10), layer_2=zeros(5, 2))) == 20
+            @test LuxCore.parameter_length(zeros(10, 2)) == 20
+            @test LuxCore.state_length(zeros(10, 2)) == 20
+            @test LuxCore.state_length(Val(true)) == 1
+            @test LuxCore.state_length((zeros(10), zeros(5, 2))) == 20
+            @test LuxCore.state_length((layer_1=zeros(10), layer_2=zeros(5, 2))) == 20
 
-            @test LuxCore.initialparameters(rng, NamedTuple()) == NamedTuple()
-            @test_throws MethodError LuxCore.initialparameters(rng, ())
-            @test LuxCore.initialparameters(rng, nothing) == NamedTuple()
-            @test LuxCore.initialparameters(rng, (nothing, layer)) ==
+            @test LuxCore.initial_parameters(rng, NamedTuple()) == NamedTuple()
+            @test_throws MethodError LuxCore.initial_parameters(rng, ())
+            @test LuxCore.initial_parameters(rng, nothing) == NamedTuple()
+            @test LuxCore.initial_parameters(rng, (nothing, layer)) ==
                   (NamedTuple(), NamedTuple())
 
-            @test LuxCore.initialstates(rng, NamedTuple()) == NamedTuple()
-            @test_throws MethodError LuxCore.initialstates(rng, ())
-            @test LuxCore.initialstates(rng, nothing) == NamedTuple()
-            @test LuxCore.initialparameters(rng, (nothing, layer)) ==
+            @test LuxCore.initial_states(rng, NamedTuple()) == NamedTuple()
+            @test_throws MethodError LuxCore.initial_states(rng, ())
+            @test LuxCore.initial_states(rng, nothing) == NamedTuple()
+            @test LuxCore.initial_parameters(rng, (nothing, layer)) ==
                   (NamedTuple(), NamedTuple())
         end
     end
 
-    @testset "AbstractExplicitContainerLayer Interface" begin
+    @testset "AbstractLuxContainerLayer Interface" begin
         model = Chain((; layer_1=Dense(5, 5), layer_2=Dense(5, 6)))
         x = randn(rng, Float32, 5)
         ps, st = LuxCore.setup(rng, model)
 
-        @test LuxCore.parameterlength(ps) ==
-              LuxCore.parameterlength(model) ==
-              LuxCore.parameterlength(model.layers[1]) +
-              LuxCore.parameterlength(model.layers[2])
-        @test LuxCore.statelength(st) ==
-              LuxCore.statelength(model) ==
-              LuxCore.statelength(model.layers[1]) + LuxCore.statelength(model.layers[2])
+        @test LuxCore.parameter_length(ps) ==
+              LuxCore.parameter_length(model) ==
+              LuxCore.parameter_length(model.layers[1]) +
+              LuxCore.parameter_length(model.layers[2])
+        @test LuxCore.state_length(st) ==
+              LuxCore.state_length(model) ==
+              LuxCore.state_length(model.layers[1]) + LuxCore.state_length(model.layers[2])
 
         @test LuxCore.apply(model, x, ps, st) == model(x, ps, st)
 
@@ -106,12 +106,12 @@ end
         x = randn(rng, Float32, 5)
         ps, st = LuxCore.setup(rng, model)
 
-        @test LuxCore.parameterlength(ps) ==
-              LuxCore.parameterlength(model) ==
-              LuxCore.parameterlength(model.layer1) + LuxCore.parameterlength(model.layer2)
-        @test LuxCore.statelength(st) ==
-              LuxCore.statelength(model) ==
-              LuxCore.statelength(model.layer1) + LuxCore.statelength(model.layer2)
+        @test LuxCore.parameter_length(ps) ==
+              LuxCore.parameter_length(model) ==
+              LuxCore.parameter_length(model.layer1) + LuxCore.parameter_length(model.layer2)
+        @test LuxCore.state_length(st) ==
+              LuxCore.state_length(model) ==
+              LuxCore.state_length(model.layer1) + LuxCore.state_length(model.layer2)
 
         @test LuxCore.apply(model, x, ps, st) == model(x, ps, st)
 
@@ -119,7 +119,7 @@ end
               first(LuxCore.apply(model, x, ps, st))
 
         # the layers just pass x along
-        @test LuxCore.outputsize(model, x, rng) == (5,)
+        @test LuxCore.output_size(model, x, rng) == (5,)
 
         @test_nowarn println(model)
     end
@@ -176,14 +176,14 @@ end
             @test new_model.layers.layer_2.in == 5
             @test new_model.layers.layer_2.out == 10
 
-            @test LuxCore.outputsize(model, rand(5), rng) == (5,)
-            @test LuxCore.outputsize(model, rand(5, 2), rng) == (5,)
+            @test LuxCore.output_size(model, rand(5), rng) == (5,)
+            @test LuxCore.output_size(model, rand(5, 2), rng) == (5,)
         end
 
         @testset "Method Ambiguity" begin
             # Needed if defining a layer that works with both Flux and Lux -- See DiffEqFlux.jl
             # See https://github.com/SciML/DiffEqFlux.jl/pull/750#issuecomment-1373874944
-            struct CustomLayer{M, P} <: LuxCore.AbstractExplicitContainerLayer{(:model,)}
+            struct CustomLayer{M, P} <: LuxCore.AbstractLuxContainerLayer{(:model,)}
                 model::M
                 p::P
             end
@@ -197,13 +197,13 @@ end
     end
 
     @testset "Display Name" begin
-        struct StructWithoutName <: LuxCore.AbstractExplicitLayer end
+        struct StructWithoutName <: LuxCore.AbstractLuxLayer end
 
         model = StructWithoutName()
 
         @test LuxCore.display_name(model) == "StructWithoutName"
 
-        struct StructWithName{N} <: LuxCore.AbstractExplicitLayer
+        struct StructWithName{N} <: LuxCore.AbstractLuxLayer
             name::N
         end
 
@@ -228,14 +228,14 @@ end
             ps, st = LuxCore.setup(rng, models)
             @test length(ps) == length(models)
             @test length(st) == length(models)
-            @test typeof(ps[1]) == typeof(LuxCore.initialparameters(rng, models[1]))
-            @test typeof(ps[2]) == typeof(LuxCore.initialparameters(rng, models[2]))
-            @test typeof(ps[3][1]) == typeof(LuxCore.initialparameters(rng, models[3][1]))
-            @test typeof(ps[3][2]) == typeof(LuxCore.initialparameters(rng, models[3][2]))
-            @test typeof(st[1]) == typeof(LuxCore.initialstates(rng, models[1]))
-            @test typeof(st[2]) == typeof(LuxCore.initialstates(rng, models[2]))
-            @test typeof(st[3][1]) == typeof(LuxCore.initialstates(rng, models[3][1]))
-            @test typeof(st[3][2]) == typeof(LuxCore.initialstates(rng, models[3][2]))
+            @test typeof(ps[1]) == typeof(LuxCore.initial_parameters(rng, models[1]))
+            @test typeof(ps[2]) == typeof(LuxCore.initial_parameters(rng, models[2]))
+            @test typeof(ps[3][1]) == typeof(LuxCore.initial_parameters(rng, models[3][1]))
+            @test typeof(ps[3][2]) == typeof(LuxCore.initial_parameters(rng, models[3][2]))
+            @test typeof(st[1]) == typeof(LuxCore.initial_states(rng, models[1]))
+            @test typeof(st[2]) == typeof(LuxCore.initial_states(rng, models[2]))
+            @test typeof(st[3][1]) == typeof(LuxCore.initial_states(rng, models[3][1]))
+            @test typeof(st[3][2]) == typeof(LuxCore.initial_states(rng, models[3][2]))
         end
     end
 
