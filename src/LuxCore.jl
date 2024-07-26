@@ -316,17 +316,6 @@ function check_fmap_condition(cond::C, ::Type{T}, x) where {C, T}
     return check_fmap_condition(cond, nothing, x)
 end
 
-# deprecations
-Base.@deprecate_binding AbstractExplicitLayer AbstractLuxLayer false
-Base.@deprecate_binding AbstractExplicitContainerLayer AbstractLuxContainerLayer false
-
-Base.@deprecate initialparameters(args...) initial_parameters(args...) false
-Base.@deprecate initialstates(args...) initial_states(args...) false
-Base.@deprecate parameterlength(args...) parameter_length(args...) false
-Base.@deprecate statelength(args...) state_length(args...) false
-Base.@deprecate inputsize(args...) input_size(args...) false
-Base.@deprecate outputsize(args...) output_size(args...) false
-
 @compat(public,
     (replicate, trainmode, testmode, update_state, contains_lux_layer,
         check_fmap_condition, AbstractLuxLayer, AbstractLuxContainerLayer,

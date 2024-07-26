@@ -3,7 +3,7 @@ using Aqua, ExplicitImports, Functors, LuxCore, Optimisers, Random, Test, Enzyme
 rng = LuxCore._default_rng()
 
 # Define some custom layers
-struct Dense <: LuxCore.AbstractExplicitLayer
+struct Dense <: LuxCore.AbstractLuxLayer
     in::Int
     out::Int
 end
@@ -14,7 +14,7 @@ end
 
 (::Dense)(x, ps, st) = x, st  # Dummy Forward Pass
 
-struct Chain{L} <: LuxCore.AbstractExplicitContainerLayer{(:layers,)}
+struct Chain{L} <: LuxCore.AbstractLuxContainerLayer{(:layers,)}
     layers::L
 end
 
@@ -24,7 +24,7 @@ function (c::Chain)(x, ps, st)
     return y, (layers = (st1, st2))
 end
 
-struct Chain2{L1, L2} <: LuxCore.AbstractExplicitContainerLayer{(:layer1, :layer2)}
+struct Chain2{L1, L2} <: LuxCore.AbstractLuxContainerLayer{(:layer1, :layer2)}
     layer1::L1
     layer2::L2
 end
