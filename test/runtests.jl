@@ -1,10 +1,26 @@
-using Aqua, ExplicitImports, Functors, LuxCore, Optimisers, Random, Test, EnzymeCore,
-      MLDataDevices
+using LuxCore, Test
+
+@testset "Extension Loading Checks (Fail)" begin
+    @test !LuxCore._is_extension_loaded(Val(:Setfield))
+    @test !LuxCore._is_extension_loaded(Val(:Functors))
+    @test_throws ArgumentError LuxCore._setfield(1, 2, 3)
+    @test_throws ArgumentError LuxCore._fmap(identity, 1)
+    @test_throws ArgumentError LuxCore._fleaves(1)
+end
+
+using Functors, Setfield
+
+@testset "Extension Loading Checks (Pass)" begin
+    @test LuxCore._is_extension_loaded(Val(:Setfield))
+    @test LuxCore._is_extension_loaded(Val(:Functors))
+end
+
+using Aqua, ExplicitImports, Optimisers, Random, EnzymeCore, MLDataDevices
 
 rng = LuxCore._default_rng()
 
 # Define some custom layers
-struct Dense <: LuxCore.AbstractExplicitLayer
+struct Dense <: AbstractLuxLayer
     in::Int
     out::Int
 end
@@ -15,17 +31,27 @@ end
 
 (::Dense)(x, ps, st) = x, st  # Dummy Forward Pass
 
-struct Chain{L} <: LuxCore.AbstractExplicitContainerLayer{(:layers,)}
+struct Chain{L} <: AbstractLuxContainerLayer{(:layers,)}
     layers::L
 end
 
 function (c::Chain)(x, ps, st)
-    y, st1 = c.layers[1](x, ps.layer_1, st.layer_1)
-    y, st2 = c.layers[2](y, ps.layer_2, st.layer_2)
-    return y, (layers = (st1, st2))
+    y, st1 = c.layers[1](x, ps.layers.layer_1, st.layers.layer_1)
+    y, st2 = c.layers[2](y, ps.layers.layer_2, st.layers.layer_2)
+    return y, (; layers=(; layer_1=st1, layer_2=st2))
 end
 
-struct Chain2{L1, L2} <: LuxCore.AbstractExplicitContainerLayer{(:layer1, :layer2)}
+struct ChainWrapper{L} <: AbstractLuxWrapperLayer{:layers}
+    layers::L
+end
+
+function (c::ChainWrapper)(x, ps, st)
+    y, st1 = c.layers[1](x, ps.layer_1, st.layer_1)
+    y, st2 = c.layers[2](y, ps.layer_2, st.layer_2)
+    return y, (; layer_1=st1, layer_2=st2)
+end
+
+struct Chain2{L1, L2} <: AbstractLuxContainerLayer{(:layer1, :layer2)}
     layer1::L1
     layer2::L2
 end
@@ -37,7 +63,7 @@ function (c::Chain2)(x, ps, st)
 end
 
 @testset "LuxCore.jl Tests" begin
-    @testset "AbstractExplicitLayer Interface" begin
+    @testset "AbstractLuxLayer Interface" begin
         @testset "Custom Layer" begin
             model = Dense(5, 6)
             x = randn(rng, Float32, 5)
@@ -57,7 +83,7 @@ end
         end
 
         @testset "Default Fallbacks" begin
-            struct NoParamStateLayer <: LuxCore.AbstractExplicitLayer end
+            struct NoParamStateLayer <: AbstractLuxLayer end
 
             layer = NoParamStateLayer()
             @test LuxCore.initialparameters(rng, layer) == NamedTuple()
@@ -83,10 +109,13 @@ end
         end
     end
 
-    @testset "AbstractExplicitContainerLayer Interface" begin
+    @testset "AbstractLuxContainerLayer Interface" begin
         model = Chain((; layer_1=Dense(5, 5), layer_2=Dense(5, 6)))
         x = randn(rng, Float32, 5)
         ps, st = LuxCore.setup(rng, model)
+
+        @test fieldnames(typeof(ps)) == (:layers,)
+        @test fieldnames(typeof(st)) == (:layers,)
 
         @test LuxCore.parameterlength(ps) ==
               LuxCore.parameterlength(model) ==
@@ -121,6 +150,31 @@ end
 
         # the layers just pass x along
         @test LuxCore.outputsize(model, x, rng) == (5,)
+
+        @test_nowarn println(model)
+    end
+
+    @testset "AbstractLuxWrapperLayer Interface" begin
+        model = ChainWrapper((; layer_1=Dense(5, 10), layer_2=Dense(10, 5)))
+        x = randn(rng, Float32, 5)
+        ps, st = LuxCore.setup(rng, model)
+
+        @test fieldnames(typeof(ps)) == (:layer_1, :layer_2)
+        @test fieldnames(typeof(st)) == (:layer_1, :layer_2)
+
+        @test LuxCore.parameterlength(ps) ==
+              LuxCore.parameterlength(model) ==
+              LuxCore.parameterlength(model.layers.layer_1) +
+              LuxCore.parameterlength(model.layers.layer_2)
+        @test LuxCore.statelength(st) ==
+              LuxCore.statelength(model) ==
+              LuxCore.statelength(model.layers.layer_1) +
+              LuxCore.statelength(model.layers.layer_2)
+
+        @test LuxCore.apply(model, x, ps, st) == model(x, ps, st)
+
+        @test LuxCore.stateless_apply(model, x, ps) ==
+              first(LuxCore.apply(model, x, ps, st))
 
         @test_nowarn println(model)
     end
@@ -179,12 +233,39 @@ end
 
             @test LuxCore.outputsize(model, rand(5), rng) == (5,)
             @test LuxCore.outputsize(model, rand(5, 2), rng) == (5,)
+
+            model = ChainWrapper((; layer_1=Dense(5, 10), layer_2=Dense(10, 5)))
+
+            children, reconstructor = Functors.functor(model)
+
+            @test children isa NamedTuple
+            @test fieldnames(typeof(children)) == (:layers,)
+            @test children.layers isa NamedTuple
+            @test fieldnames(typeof(children.layers)) == (:layer_1, :layer_2)
+            @test children.layers.layer_1 isa Dense
+            @test children.layers.layer_2 isa Dense
+            @test children.layers.layer_1.in == 5
+            @test children.layers.layer_1.out == 10
+            @test children.layers.layer_2.in == 10
+            @test children.layers.layer_2.out == 5
+
+            new_model = reconstructor((;
+                layers=(; layer_1=Dense(10, 5), layer_2=Dense(5, 10))))
+
+            @test new_model isa ChainWrapper
+            @test new_model.layers.layer_1.in == 10
+            @test new_model.layers.layer_1.out == 5
+            @test new_model.layers.layer_2.in == 5
+            @test new_model.layers.layer_2.out == 10
+
+            @test LuxCore.outputsize(model, rand(5), rng) == (5,)
+            @test LuxCore.outputsize(model, rand(5, 2), rng) == (5,)
         end
 
         @testset "Method Ambiguity" begin
             # Needed if defining a layer that works with both Flux and Lux -- See DiffEqFlux.jl
             # See https://github.com/SciML/DiffEqFlux.jl/pull/750#issuecomment-1373874944
-            struct CustomLayer{M, P} <: LuxCore.AbstractExplicitContainerLayer{(:model,)}
+            struct CustomLayer{M, P} <: AbstractLuxContainerLayer{(:model,)}
                 model::M
                 p::P
             end
@@ -198,13 +279,13 @@ end
     end
 
     @testset "Display Name" begin
-        struct StructWithoutName <: LuxCore.AbstractExplicitLayer end
+        struct StructWithoutName <: AbstractLuxLayer end
 
         model = StructWithoutName()
 
         @test LuxCore.display_name(model) == "StructWithoutName"
 
-        struct StructWithName{N} <: LuxCore.AbstractExplicitLayer
+        struct StructWithName{N} <: AbstractLuxLayer
             name::N
         end
 
