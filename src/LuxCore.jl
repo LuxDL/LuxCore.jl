@@ -380,8 +380,8 @@ end
 
 @compat(public,
     (replicate, trainmode, testmode, update_state, contains_lux_layer,
-        check_fmap_condition, initialparameters, initialstates, parameterlength,
-        statelength, outputsize, setup, apply, stateless_apply, display_name))
+    check_fmap_condition, initialparameters, initialstates, parameterlength,
+    statelength, outputsize, setup, apply, stateless_apply, display_name))
 
 export AbstractLuxLayer, AbstractLuxContainerLayer, AbstractLuxWrapperLayer
 
